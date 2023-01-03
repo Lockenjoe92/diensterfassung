@@ -68,12 +68,15 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     if(empty($username_err) && empty($password_err) && empty($confirm_password_err)){
 
         // Prepare an insert statement
-        $sql = "INSERT INTO users (username, password) VALUES (?, ?)";
+        $sql = "INSERT INTO users (username, password, nutzergruppen) VALUES (?, ?, ?)";
 
         if($stmt = $mysqli->prepare($sql)){
+
+            echo "prepare worked";
+
             // Bind variables to the prepared statement as parameters
-            #$param_groups = 'nutzer';
-            $stmt->bind_param("ss", $param_username, $param_password);
+            $param_groups = 'nutzer';
+            $stmt->bind_param("sss", $param_username, $param_password, $param_groups);
 
             // Set parameters
             $param_username = $username;
@@ -84,7 +87,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 // Redirect to login page
                 header("location: login.php");
             } else{
-                echo "Oops! Something went wrong. Please try again later.";
+                echo("Error description: " . $stmt -> error);
             }
 
             // Close statement
