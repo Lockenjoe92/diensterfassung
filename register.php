@@ -19,14 +19,15 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         $sql = "SELECT id FROM users WHERE username = ?";
 
         if($stmt = $mysqli->prepare($sql)){
-            // Bind variables to the prepared statement as parameters
-            $stmt->bind_param("s", $param_username);
-
             // Set parameters
             $param_username = trim($_POST["username"]);
 
+            // Bind variables to the prepared statement as parameters
+            $stmt->bind_param("s", $param_username);
+
             // Attempt to execute the prepared statement
             if($stmt->execute()){
+
                 // store result
                 $stmt->store_result();
 
@@ -67,12 +68,12 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     if(empty($username_err) && empty($password_err) && empty($confirm_password_err)){
 
         // Prepare an insert statement
-        $sql = "INSERT INTO users (username, password, groups) VALUES (?, ?, ?)";
+        $sql = "INSERT INTO users (username, password) VALUES (?, ?)";
 
         if($stmt = $mysqli->prepare($sql)){
             // Bind variables to the prepared statement as parameters
-            $param_groups = 'user';
-            $stmt->bind_param("sss", $param_username, $param_password, $param_groups);
+            #$param_groups = 'nutzer';
+            $stmt->bind_param("ss", $param_username, $param_password);
 
             // Set parameters
             $param_username = $username;
