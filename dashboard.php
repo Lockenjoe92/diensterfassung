@@ -8,12 +8,27 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
     exit;
 }
 
+// Load Admin-View Buttons
+require_once "./tools/permission_checker.php";
+if(permission_checker_boolean('admin')){
+    $adminFunctions = "<p><a href='dienst-anlegen.php' class='btn btn-dark'>Diensttyp anlegen</a></p>";
+} else {
+    $adminFunctions = "";
+}
+
+// Load Team-View Buttons
+if(permission_checker_boolean('team')){
+    $teamFunctions = "<p><a href='diensterfassung.php' class='btn btn-dark'>Dienst erfassen</a></p>";
+} else {
+    $teamFunctions = "";
+}
+
 require_once "./configs/db_config.php";
 
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <title>Welcome</title>
@@ -23,10 +38,12 @@ require_once "./configs/db_config.php";
     </style>
 </head>
 <body>
-<h1 class="my-5">Hi, <b><?php echo htmlspecialchars($_SESSION["username"]); ?></b>. Welcome to our site.</h1>
+<h1 class="my-5">Hi, <b><?php echo htmlspecialchars($_SESSION["vorname"]); ?></b>. Willkommen auf unserer Seite.</h1>
+<?php echo $adminFunctions; ?>
+<?php echo $teamFunctions; ?>
 <p>
-    <a href="reset_password.php" class="btn btn-warning">Reset Your Password</a>
-    <a href="logout.php" class="btn btn-danger ml-3">Sign Out of Your Account</a>
+    <a href="./reset_password.php" class="btn btn-warning">Passwort ändern</a>
+    <a href="./logout.php" class="btn btn-danger ml-3">Ausloggen</a>
 </p>
 </body>
 </html>
