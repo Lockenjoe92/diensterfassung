@@ -5,6 +5,7 @@ session_start();
 // Fetch requirements
 require_once "./tools/permission_checker.php";
 require_once "./forms/diensterfassung.php";
+require_once "./configs/db_config.php";
 
 // Check if the user is logged in, if not then redirect him to login page
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
@@ -15,12 +16,11 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
     permission_checker_with_redirect('team');
 }
 
-// Fetch Form Elements
-$DiensttypDropdown = dropdown_diensttypen('diensttyp');
-$FormTable = diensterfassung_table_form_element();
+$ParserOutput = diensterfassung_form_parser($mysqli);
 
-
-#    require_once "./configs/db_config.php";
+$KommentarOben = $ParserOutput['kommentar'];
+$FormInputs = $ParserOutput['form_inputs'];
+$FormButtons = $ParserOutput['form_buttons'];
 
 ?>
 
@@ -40,24 +40,14 @@ $FormTable = diensterfassung_table_form_element();
 <body>
 <div class="wrapper">
     <h2>Dienst erfassen</h2>
-    <p>Bitte fülle das Formular aus um einen neuen Dienst zu erfassen.</p>
+    <p><?php echo $KommentarOben; ?></p>
+
     <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
-        <div class="form-group">
-            <?php echo $DiensttypDropdown; ?>
-        </div>
-        <div class="form-group">
-            <label>Datum</label>
-            <input type="date" name="datum" class="form-control <?php echo (!empty($vorname_err)) ? 'is-invalid' : ''; ?>" value="<?php echo $vorname; ?>">
-            <span class="invalid-feedback"><?php echo $vorname_err; ?></span>
-        </div>
 
-        <?php echo $FormTable; ?>
+        <?php echo $FormInputs; ?>
+        <?php echo $FormButtons; ?>
 
-        <div class="form-group">
-            <input type="submit" class="btn btn-primary" value="Absenden">
-            <input type="reset" class="btn btn-secondary ml-2" value="Reset">
-        </div>
-        <p>Falsch hier? <a href="dashboard.php">Hier gehts zurück</a>.</p>
+        <p>Abbrechen? <a href="dashboard.php">Hier gehts zurück</a>.</p>
     </form>
 </div>
 </body>
