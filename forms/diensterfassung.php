@@ -107,11 +107,12 @@ function dropdown_diensttypen($name, $day, $mysqli, $selected='', $disabled='', 
     $Output .= "</select>";
     return $Output;
 }
-function diensterfassung_form_parser($mysqli){
+function diensterfassung_form_parser($mysqli, $granulationMins){
 
     //Initialize dependencies
     require_once "configs/db_config.php";
     require_once "tools/dienste_funktionen.php";
+    require_once "tools/time_stuff.php";
 
     var_dump($_POST);
 
@@ -137,7 +138,7 @@ function diensterfassung_form_parser($mysqli){
         $ParserOutput['form_buttons'] = '<div class="form-group"><input type="submit" class="btn btn-primary" value="Absenden" name="step1"><input type="submit" class="btn btn-secondary ml-2" value="Reset" name="reset1"></div>';
     }
 
-    // Step 2 - step1 is activated
+    // Step 2 - step1 is activated -> chose date
     if(isset($_POST['step1'])){
 
         // Initialize Error Handling
@@ -178,7 +179,7 @@ function diensterfassung_form_parser($mysqli){
 
     }
 
-    // Step 3 - step2 is activated
+    // Step 3 - step2 is activated -> chose Diensttype
     if(isset($_POST['step2'])){
 
         // Initialize Error Handling
@@ -204,8 +205,6 @@ function diensterfassung_form_parser($mysqli){
 
         if($ErrCount>0){
 
-            var_dump($ErrMess);
-
             $ParserOutput['kommentar'] = 'Schritt 2: Bitte wähle den zu erfassenden Diensttyp aus.';
             //Form inputs
             $Inputs = '<div class="form-group"><label>Datum</label><input type="date" name="datum" class="form-control is-valid" value="'.$_POST['datum'].'" disabled></div>';
@@ -226,7 +225,7 @@ function diensterfassung_form_parser($mysqli){
             # Parse Date 2 weekday
             $ChosenWeekday = date('l', strtotime($_POST['datum']));
             $Inputs .= '<div class="form-group"><label>Diensttyp</label>'.dropdown_diensttypen('diensttyp', $ChosenWeekday, $mysqli, $_POST['diensttyp'], 'disabled', 'is-valid').'</div>';
-            $Inputs .= '<div class="form-group"><label>Arbeits-/Bereitschaftszeiten</label>'.diensterfassung_table_form_element($mysqli, $_POST['datum'], $_POST['diensttyp'], 60).'</div>';
+            $Inputs .= '<div class="form-group"><label>Arbeits-/Bereitschaftszeiten</label>'.diensterfassung_table_form_element($mysqli, $_POST['datum'], $_POST['diensttyp'], $granulationMins).'</div>';
             $Inputs .= "<input type='hidden' name='datum' value='".$_POST['datum']."'>";
             $Inputs .= "<input type='hidden' name='diensttyp' value='".$_POST['diensttyp']."'>";
 
@@ -237,6 +236,146 @@ function diensterfassung_form_parser($mysqli){
 
         }
 
+    }
+
+    // Step 4 - step3 is activated -> added times, checks
+    if(isset($_POST['step3'])){
+
+        // Initialize Error Handling
+        $ErrCount = 0;
+        $ErrMess = "";
+
+        // Auto-Parse all checkboxes
+        // Define Dienstzeiten Types
+
+        // Load Diensttyp Meta and calculate table-boundaries
+        $DiensttypMeta = lade_diensttyp_meta($mysqli, $_POST['diensttyp']);
+        $DiensttypMetaVon = $DiensttypMeta['von'];
+        $DiensttypMetaBis = $DiensttypMeta['bis'];
+        $StartTimeString = $EndTimeString = date('Y-m-d G:i:s');
+
+        // Case 1 - von < bis -> same-day
+        if(strtotime($DiensttypMetaVon)<strtotime($DiensttypMetaBis)){
+            $StartTimeString = $_POST['datum'].' '.$DiensttypMetaVon;
+            $EndTimeString = $_POST['datum'].' '.$DiensttypMetaBis;
+        }
+
+        // Case 2 - von > bis -> overnight
+        if(strtotime($DiensttypMetaVon)>strtotime($DiensttypMetaBis)){
+            $StartTimeString = $_POST['datum'].' '.$DiensttypMetaVon;
+            $EndTimeString = date('Y-m-d', strtotime('+1 day',strtotime($_POST['datum']))).' '.$DiensttypMetaBis;
+        }
+
+        // Make them time()-objects
+        $StartTimeObj = strtotime($StartTimeString);
+        $EndTimeObj = strtotime($EndTimeString);
+
+        // Calculate necessary runs for Table-generator
+        $NecessaryRuns = calculate_total_mins_diff($StartTimeObj, $EndTimeObj)/$granulationMins;
+        $CounterArbeitszeit = 0;
+        $CounterBereitschaft = 0;
+        $ProtocolText = "";
+
+        for($a=0;$a<$NecessaryRuns;$a++){
+            $radioButtonIDbd = 'inlineRadioOptions1-'.($a+1);
+            $radioButtonIDaz = 'inlineRadioOptions2-'.($a+1);
+
+            // case 1 - all-click
+            if(isset($_POST[$radioButtonIDbd])&&isset($_POST[$radioButtonIDaz])){
+                $ErrCount++;
+                $ErrMess .= "Du hast zu einem Zeitraum doppelt geclickt!";
+            }
+            // case 2 - no-click
+            elseif(!isset($_POST[$radioButtonIDbd])&&!isset($_POST[$radioButtonIDaz])){
+                $ErrCount++;
+                $ErrMess .= "Du hast zu einem Zeitraum nichts geclickt!";
+            }
+            else {
+                // count respective item
+                if(isset($_POST[$radioButtonIDbd])){$CounterBereitschaft++;
+                    $ProtocolText .= ($a+1).":bd,";}
+                if(isset($_POST[$radioButtonIDaz])){$CounterArbeitszeit++;$ProtocolText .= ($a+1).":az,";}
+            }
+        }
+
+        if($ErrCount==0){
+
+            // Render Table header
+            $Header = "<thead>";
+            $Header .= "<tr>";
+            $Header .= "<th scope='col'>Arbeitszeit</th>";
+            $Header .= "<th scope='col'>Bereitschaftszeit</th>";
+            $Header .= "</tr>";
+            $Header .= "</thead>";
+
+            // Render Table Body
+            $Body = "<tbody>";
+            $Body .= "<tr>";
+            $Body .= "<td>".convertToHoursMins($CounterArbeitszeit*$granulationMins)."</td>";
+            $Body .= "<td>".convertToHoursMins($CounterBereitschaft*$granulationMins)."</td>";
+            $Body .= "</tr>";
+            $Body .= "</tbody>";
+
+            $TableStep4 = "<table class='table table-borderless align-middle'>";
+            $TableStep4 .= $Header;
+            $TableStep4 .= $Body;
+            $TableStep4 .= "</table>";
+
+            $ParserOutput['kommentar'] = 'Schritt 4: Bitte Bestätige die Arbeits-/Bereitschaftsdienstzeiten - anschließend wird der Eintrag in der Datenbank gespeichert und du kannst die ID auf dem Zettel festhalten.';
+
+            //Form inputs
+            $Inputs = '<div class="form-group"><label>Datum</label><input type="date" name="datum" class="form-control is-valid" value="'.$_POST['datum'].'" disabled></div>';
+            # Parse Date 2 weekday
+            $ChosenWeekday = date('l', strtotime($_POST['datum']));
+            $Inputs .= '<div class="form-group"><label>Diensttyp</label>'.dropdown_diensttypen('diensttyp', $ChosenWeekday, $mysqli, $_POST['diensttyp'], 'disabled', 'is-valid').'</div>';
+            $Inputs .= '<div class="form-group"><label>Arbeits-/Bereitschaftszeiten</label>'.$TableStep4.'</div>';
+            $Inputs .= "<input type='hidden' name='datum' value='".$_POST['datum']."'>";
+            $Inputs .= "<input type='hidden' name='diensttyp' value='".$_POST['diensttyp']."'>";
+            $Inputs .= "<input type='hidden' name='dienstprotokoll' value='".$ProtocolText."'>";
+            $Inputs .= "<input type='hidden' name='dienstsummeaz' value='".($CounterArbeitszeit*$granulationMins)."'>";
+            $Inputs .= "<input type='hidden' name='dienstsummebd' value='".($CounterBereitschaft*$granulationMins)."'>";
+
+            $ParserOutput['form_inputs'] = $Inputs;
+
+            //Form Buttons
+            $ParserOutput['form_buttons'] = '<div class="form-group"><input type="submit" class="btn btn-primary" value="Eintragen" name="step4"><input type="submit" class="btn btn-secondary ml-2" value="Zurück" name="reset4"></div>';
+
+        }
+    }
+
+    // Step 4 - step4 is activated -> Eintrag
+    if(isset($_POST['step4'])){
+
+        $Answer = dienst_eintragen($mysqli, $_POST['diensttyp'], $_POST['datum'],$_SESSION["id"], $_POST['dienstprotokoll'], $_POST['dienstsummeaz'], $_POST['dienstsummebd']);
+
+        if($Answer['bool']){
+            $ParserOutput['kommentar'] = 'Schritt 5: Eintrag in Datenbank.';
+            $Inputs = '<div class="form-group"><label>Datum</label><input type="date" name="datum" class="form-control is-valid" value="'.$_POST['datum'].'" disabled></div>';
+            # Parse Date 2 weekday
+            $ChosenWeekday = date('l', strtotime($_POST['datum']));
+            $Inputs .= '<div class="form-group"><label>Diensttyp</label>'.dropdown_diensttypen('diensttyp', $ChosenWeekday, $mysqli, $_POST['diensttyp'], 'disabled', 'is-valid').'</div>';
+            $Inputs .= '<h3>Eintrag erfolgreich!</h3><p>Der Eintrag trägt die ID:<b>'.$Answer['answer'].'</b></p>';
+            $ParserOutput['form_inputs'] = $Inputs;
+            $ParserOutput['form_buttons'] = '<div class="form-group"><input type="submit" class="btn btn-secondary ml-2" value="Zurück" name="finish5"></div>';
+        } else {
+            $ParserOutput['kommentar'] = 'Schritt 5: Eintrag in Datenbank.';
+            $Inputs = '<div class="form-group"><label>Datum</label><input type="date" name="datum" class="form-control is-valid" value="'.$_POST['datum'].'" disabled></div>';
+            # Parse Date 2 weekday
+            $ChosenWeekday = date('l', strtotime($_POST['datum']));
+            $Inputs .= '<div class="form-group"><label>Diensttyp</label>'.dropdown_diensttypen('diensttyp', $ChosenWeekday, $mysqli, $_POST['diensttyp'], 'disabled', 'is-valid').'</div>';
+            $Inputs .= '<h3>Fehler beim Eintragen</h3><p><b>'.$Answer['answer'].'</b></p>';
+            $Inputs .= "<input type='hidden' name='datum' value='".$_POST['datum']."'>";
+            $Inputs .= "<input type='hidden' name='diensttyp' value='".$_POST['diensttyp']."'>";
+            $ParserOutput['form_inputs'] = $Inputs;
+            $ParserOutput['form_buttons'] = '<div class="form-group"><input type="submit" class="btn btn-secondary ml-2" value="Zurück" name="reset5"></div>';
+        }
+
+    }
+
+    // Go Back
+    if(isset($_POST['finish5'])){
+        // Redirect user to welcome page
+        header("location: dashboard.php");
     }
 
     return $ParserOutput;
