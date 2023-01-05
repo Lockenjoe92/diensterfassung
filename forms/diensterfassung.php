@@ -1,30 +1,72 @@
 <?php
-function diensterfassung_table_form_element(){
+function diensterfassung_table_form_element($mysqli, $Datum, $Diensttyp, $granulationMins){
+
+    // Fetch dependencies
+    require_once "tools/time_stuff.php";
 
     // Define Dienstzeiten Types
     $Dienstzeiten = ['Bereitschaft', 'Arbeit'];
 
+    // Load Diensttyp Meta and calculate table-boundaries
+    $DiensttypMeta = lade_diensttyp_meta($mysqli, $Diensttyp);
+    $DiensttypMetaVon = $DiensttypMeta['von'];
+    $DiensttypMetaBis = $DiensttypMeta['bis'];
+    $StartTimeString = $EndTimeString = date('Y-m-d G:i:s');
+
+        // Case 1 - von < bis -> same-day
+        if(strtotime($DiensttypMetaVon)<strtotime($DiensttypMetaBis)){
+            $StartTimeString = $Datum.' '.$DiensttypMetaVon;
+            $EndTimeString = $Datum.' '.$DiensttypMetaBis;
+        }
+
+        // Case 2 - von > bis -> overnight
+        if(strtotime($DiensttypMetaVon)>strtotime($DiensttypMetaBis)){
+            $StartTimeString = $Datum.' '.$DiensttypMetaVon;
+            $EndTimeString = date('Y-m-d', strtotime('+1 day',strtotime($Datum))).' '.$DiensttypMetaBis;
+        }
+
+        // Make them time()-objects
+        $StartTimeObj = strtotime($StartTimeString);
+        $EndTimeObj = strtotime($EndTimeString);
+
+        // Calculate necessary runs for Table-generator
+        $NecessaryRuns = calculate_total_mins_diff($StartTimeObj, $EndTimeObj)/$granulationMins;
+
     // initialize table element
-    $Output = "<table class='table table-borderless'>";
+    $Output = "<table class='table table-borderless align-middle'>";
 
     // Render Table header
     $Header = "<thead>";
     $Header .= "<tr>";
-    $Header .= "<th scope='col'>Typ</th>";
-    for($a=0;$a<=23;$a++){
-        $Header .= "<th scope='col'>".$a." - ".($a+1)."</th>";
-    }
+    $Header .= "<th scope='col'>Zeitraum</th>";
+    $Header .= "<th scope='col'>Arbeits-/Bereitschaftszeit</th>";
     $Header .= "</tr>";
     $Header .= "</thead>";
 
     // Render Table Body
     $Body = "<tbody>";
-    foreach ($Dienstzeiten as $Dienstzeit){
+    for($a=0;$a<$NecessaryRuns;$a++){
+
         $Body .= "<tr>";
-        $Body .= "<th scope='row'>".$Dienstzeit."</th>";
-        for($a=0;$a<=23;$a++){
-            $Body .= "<td>o</td>";
+
+        // Calculate displayed times
+        $CurrentCellTimeMinutesOperator = '+'.$a*$granulationMins.' minutes';
+        $CurrentCellTimeMinutesOperatorEnd = '+'.(($a*$granulationMins)+$granulationMins).' minutes';
+        $CurrentCellTimeBegin = date('G:i', strtotime($CurrentCellTimeMinutesOperator, $StartTimeObj));
+        $CurrentCellTimeEnd = date('G:i', strtotime($CurrentCellTimeMinutesOperatorEnd, $StartTimeObj));;
+
+        $DienstzeitDisplay = $CurrentCellTimeBegin." - ".$CurrentCellTimeEnd;
+        $Body .= "<th scope='row'>".$DienstzeitDisplay."</th>";
+        $Body .= "<td>";
+
+        $b = 1;
+        foreach ($Dienstzeiten as $Dienstzeit){
+            $radioButtonID = $b.'-'.($a+1);
+            $Body .= '<div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" name="inlineRadioOptions'.$radioButtonID.'" id="inlineRadio'.$radioButtonID.'" value="option'.$radioButtonID.'"><label class="form-check-label" for="inlineRadio'.$radioButtonID.'">'.$Dienstzeit.'</label></div>';
+            $b++;
         }
+
+        $Body .= "</td>";
         $Body .= "</tr>";
     }
     $Body .= "</tbody>";
@@ -184,7 +226,7 @@ function diensterfassung_form_parser($mysqli){
             # Parse Date 2 weekday
             $ChosenWeekday = date('l', strtotime($_POST['datum']));
             $Inputs .= '<div class="form-group"><label>Diensttyp</label>'.dropdown_diensttypen('diensttyp', $ChosenWeekday, $mysqli, $_POST['diensttyp'], 'disabled', 'is-valid').'</div>';
-            $Inputs .= '<div class="form-group"><label>Arbeits-/Bereitschaftszeiten</label>'.diensterfassung_table_form_element().'</div>';
+            $Inputs .= '<div class="form-group"><label>Arbeits-/Bereitschaftszeiten</label>'.diensterfassung_table_form_element($mysqli, $_POST['datum'], $_POST['diensttyp'], 60).'</div>';
             $Inputs .= "<input type='hidden' name='datum' value='".$_POST['datum']."'>";
             $Inputs .= "<input type='hidden' name='diensttyp' value='".$_POST['diensttyp']."'>";
 
