@@ -185,6 +185,11 @@ function diensterfassung_form_parser($mysqli){
             $ErrMess .= "Bitte wähle ein anderes Datum aus! Die Erfassung beginnt erst am ".strftime('%a, den %e. %B %G', strtotime(DATEBEGINERFASSUNG));
         }
 
+        if($_POST['datum']>date('Y-m-d')){
+            $ErrCount++;
+            $ErrMess .= "Du kannst nur vergangene Dienste erfassen! Bitte überprüfe das gewählte Datum!";
+        }
+
         if($ErrCount>0){
 
             $ParserOutput['kommentar'] = 'Um einen neuen Dienst zu erfassen, fülle das Formular Schritt für Schritt aus.';
