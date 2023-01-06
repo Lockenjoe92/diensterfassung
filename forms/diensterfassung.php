@@ -140,8 +140,10 @@ function diensterfassung_form_parser($mysqli, $granulationMins){
 
     //Initialize dependencies
     require_once "configs/db_config.php";
+    require_once "configs/settings_config.php";
     require_once "tools/dienste_funktionen.php";
     require_once "tools/time_stuff.php";
+    setlocale(LC_ALL, 'de_DE');
 
     #dump($_POST);
 
@@ -170,6 +172,17 @@ function diensterfassung_form_parser($mysqli, $granulationMins){
         if(empty($_POST['datum'])){
             $ErrCount++;
             $ErrMess .= "Bitte wähle ein Datum aus!";
+        }
+
+        // Catch out of range dates
+        if($_POST['datum']>DATEENDEERFASSUNG){
+            $ErrCount++;
+            $ErrMess .= "Bitte wähle ein anderes Datum aus! Die Erfassung geht nur bis einschließlich ".strftime('%a, den %e. %B %G', strtotime(DATEENDEERFASSUNG));
+        }
+
+        if($_POST['datum']<DATEBEGINERFASSUNG){
+            $ErrCount++;
+            $ErrMess .= "Bitte wähle ein anderes Datum aus! Die Erfassung beginnt erst am ".strftime('%a, den %e. %B %G', strtotime(DATEBEGINERFASSUNG));
         }
 
         if($ErrCount>0){
