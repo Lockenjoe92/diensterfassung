@@ -136,7 +136,7 @@ function dropdown_diensttypen($name, $day, $mysqli, $selected='', $disabled='', 
     $Output .= "</select>";
     return $Output;
 }
-function diensterfassung_form_parser($mysqli, $granulationMins){
+function diensterfassung_form_parser($mysqli){
 
     //Initialize dependencies
     require_once "configs/db_config.php";
@@ -347,7 +347,7 @@ function diensterfassung_form_parser($mysqli, $granulationMins){
             # Parse Date 2 weekday
             $ChosenWeekday = date('l', strtotime($_POST['datum']));
             $Inputs .= '<div class="form-group"><label>Diensttyp</label>'.dropdown_diensttypen('diensttyp', $ChosenWeekday, $mysqli, $_POST['diensttyp'], 'disabled', 'is-valid').'</div>';
-            $Inputs .= '<div class="form-group"><label>Arbeits-/Bereitschaftszeiten</label><div class="alert alert-primary" role="alert">'.$ErrMess.'</div>'.diensterfassung_table_form_element($mysqli, $_POST['datum'], $_POST['diensttyp'], $ProtocolText, $granulationMins).'</div>';
+            $Inputs .= '<div class="form-group"><label>Arbeits-/Bereitschaftszeiten</label><div class="alert alert-primary" role="alert">'.$ErrMess.'</div>'.diensterfassung_table_form_element($mysqli, $_POST['datum'], $_POST['diensttyp'], $ProtocolText, DIENSTEGRANULATIONMINS).'</div>';
             $Inputs .= "<input type='hidden' name='datum' value='".$_POST['datum']."'>";
             $Inputs .= "<input type='hidden' name='diensttyp' value='".$_POST['diensttyp']."'>";
 

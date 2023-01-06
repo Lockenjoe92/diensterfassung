@@ -16,7 +16,7 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
     permission_checker_with_redirect('team');
 }
 
-$ParserOutput = diensterfassung_form_parser($mysqli,30);
+$ParserOutput = diensterfassung_form_parser($mysqli);
 
 $KommentarOben = $ParserOutput['kommentar'];
 $FormInputs = $ParserOutput['form_inputs'];
