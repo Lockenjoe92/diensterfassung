@@ -105,13 +105,18 @@ function generate_td_element_uebersicht($mysqli, $BeginDate, $Iteration){
 
     // Coloring
     $Coloring = "";
-    if($Div>=0.9){
-        $Coloring = "table-success";
-    } elseif (($Div<0.9)&&($Div>0)){
-        $Coloring = "table-warning";
-    } elseif ($Div==0){
-        $Coloring = "table-danger";
+    if($datum<=date('Y-m-d')){
+        if($Div>=0.9){
+            $Coloring = "table-success";
+        } elseif (($Div<0.9)&&($Div>0)){
+            $Coloring = "table-warning";
+        } elseif ($Div==0){
+            $Coloring = "table-danger";
+        }
+    } else {
+        $Coloring = "table-secondary";
     }
+
 
     return "<td class='".$Coloring."'></td>";
 }
