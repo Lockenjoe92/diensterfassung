@@ -49,5 +49,8 @@ $ParserOutput = parser_erfassunguebersicht($mysqli);
         <p>Abbrechen? <a href="dashboard.php">Hier gehts zurück</a>.</p>
     </form>
 </div>
+<script src="js/bootstrap.bundle.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+<script src="js/main.js"></script>
 </body>
 </html>

@@ -19,7 +19,7 @@ function table_erfassungsuebersicht($mysqli, $BeginDate, $EndeDate){
 
     // Static table head
     $Response .= '<div class="container">';
-    $Response .= '<table class="table table-striped">';
+    $Response .= '<table class="table table-striped align-middle text-center">';
     $Response .= '<thead>';
     $Response .= '<tr>';
     $Response .= '<th scope="col">KW</th>';
@@ -41,6 +41,15 @@ function table_erfassungsuebersicht($mysqli, $BeginDate, $EndeDate){
     $FirstDayNumber = strftime('%u', strtotime($BeginDate));
     $TotalDaysAchieved = 0;
 
+    $AlleDienste = array();
+    $sql = "SELECT id, dienstname, diensttage FROM diensttypen ORDER BY dienstname ASC";
+    if($stmt = $mysqli->query($sql)){
+        // store result
+        while ($row = $stmt->fetch_assoc()) {
+            $AlleDienste[] = $row;
+        }
+    }
+
     for($a=0;$a<$NecessaryWeeks;$a++){
 
         // Generate Rows
@@ -57,7 +66,7 @@ function table_erfassungsuebersicht($mysqli, $BeginDate, $EndeDate){
 
                 //start on correct day
                 if($b>=$FirstDayNumber){
-                    $Response .= generate_td_element_uebersicht($mysqli, $BeginDate, $TotalDaysAchieved);
+                    $Response .= generate_td_element_uebersicht($mysqli, $BeginDate, $TotalDaysAchieved, $AlleDienste);
                     $TotalDaysAchieved++;
                 } elseif(($b>=1) && ($b<$FirstDayNumber)) {
                     $Response .= '<td class="table-secondary"></td>';
@@ -71,7 +80,7 @@ function table_erfassungsuebersicht($mysqli, $BeginDate, $EndeDate){
                 if($b==0){
                     $Response .= '<td>'.($FirstKW+$a).'</td>';
                 } else {
-                    $Response .= generate_td_element_uebersicht($mysqli, $BeginDate, $TotalDaysAchieved);
+                    $Response .= generate_td_element_uebersicht($mysqli, $BeginDate, $TotalDaysAchieved, $AlleDienste);
                     $TotalDaysAchieved++;
                 }
 
@@ -90,7 +99,7 @@ function table_erfassungsuebersicht($mysqli, $BeginDate, $EndeDate){
 
 }
 
-function generate_td_element_uebersicht($mysqli, $BeginDate, $Iteration){
+function generate_td_element_uebersicht($mysqli, $BeginDate, $Iteration, $AlleDienste){
 
     require_once "tools/dienste_funktionen.php";
 
@@ -100,7 +109,7 @@ function generate_td_element_uebersicht($mysqli, $BeginDate, $Iteration){
 
     // fetch current stats
     $IST = lade_anzahl_dienste_an_datum_x($mysqli, $datum);
-    $SOLL = lade_soll_alle_diensttypen_an_wochentag($mysqli, date('l', strtotime($Command, strtotime($datum))));
+    $SOLL = lade_soll_alle_diensttypen_an_wochentag($mysqli, date('l', strtotime($datum)));
     $Div = $IST/$SOLL;
 
     // Coloring
@@ -113,10 +122,31 @@ function generate_td_element_uebersicht($mysqli, $BeginDate, $Iteration){
         } elseif ($Div==0){
             $Coloring = "table-danger";
         }
+
+        // fetch missing dienste for tooltip
+        $Missing = '';
+        $MissingCount = 0;
+        foreach ($AlleDienste as $Dienst){
+            if(in_array(date('l', strtotime($datum)), explode(',',$Dienst['diensttage']))){
+                if(!dienst_schon_eingetragen($mysqli, $datum, $Dienst["id"])) {
+                    $Missing .= $Dienst["dienstname"]."<br>";
+                    $MissingCount++;
+                }
+            }
+        }
+
+        if($MissingCount>0){
+            $Missing = '<b>Fehlende Einträge:</b><br>'.$Missing;
+        } else {
+            $Missing = 'Alle Dienste erfasst';
+        }
+
+        $Tooltip = '<a href="#" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="'.$Missing.'">'.$IST.'/'.$SOLL.'</a></a>';
+
     } else {
         $Coloring = "table-secondary";
+        $Tooltip = '';
     }
 
-
-    return "<td class='".$Coloring."'></td>";
+    return "<td class='".$Coloring."'>".$Tooltip."</td>";
 }
