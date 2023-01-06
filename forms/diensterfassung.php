@@ -259,7 +259,7 @@ function diensterfassung_form_parser($mysqli){
             # Parse Date 2 weekday
             $ChosenWeekday = date('l', strtotime($_POST['datum']));
             $Inputs .= '<div class="form-group"><label>Diensttyp</label>'.dropdown_diensttypen('diensttyp', $ChosenWeekday, $mysqli, $_POST['diensttyp'], 'disabled', 'is-valid').'</div>';
-            $Inputs .= '<div class="form-group"><label>Arbeits-/Bereitschaftszeiten</label>'.diensterfassung_table_form_element($mysqli, $_POST['datum'], $_POST['diensttyp'], '', $granulationMins).'</div>';
+            $Inputs .= '<div class="form-group"><label>Arbeits-/Bereitschaftszeiten</label>'.diensterfassung_table_form_element($mysqli, $_POST['datum'], $_POST['diensttyp'], '', DIENSTEGRANULATIONMINS).'</div>';
             $Inputs .= "<input type='hidden' name='datum' value='".$_POST['datum']."'>";
             $Inputs .= "<input type='hidden' name='diensttyp' value='".$_POST['diensttyp']."'>";
 
@@ -305,7 +305,7 @@ function diensterfassung_form_parser($mysqli){
         $EndTimeObj = strtotime($EndTimeString);
 
         // Calculate necessary runs for Table-generator
-        $NecessaryRuns = calculate_total_mins_diff($StartTimeObj, $EndTimeObj)/$granulationMins;
+        $NecessaryRuns = calculate_total_mins_diff($StartTimeObj, $EndTimeObj)/DIENSTEGRANULATIONMINS;
         $CounterArbeitszeit = 0;
         $CounterBereitschaft = 0;
         $ProtocolText = "";
@@ -315,8 +315,8 @@ function diensterfassung_form_parser($mysqli){
             $radioButtonIDaz = 'inlineRadioOptions2-'.($a+1);
 
             // Generate timeslot strings
-            $beginOperator = '+'.($granulationMins*$a).' minutes';
-            $endOperator = '+'.(($granulationMins*$a)+$granulationMins).' minutes';
+            $beginOperator = '+'.(DIENSTEGRANULATIONMINS*$a).' minutes';
+            $endOperator = '+'.((DIENSTEGRANULATIONMINS*$a)+DIENSTEGRANULATIONMINS).' minutes';
             $BeginTimeslotString = date("G:i", strtotime($beginOperator, $StartTimeObj));
             $EndTimeslotString = date("G:i", strtotime($endOperator, $StartTimeObj));;
 
@@ -370,8 +370,8 @@ function diensterfassung_form_parser($mysqli){
             // Render Table Body
             $Body = "<tbody>";
             $Body .= "<tr>";
-            $Body .= "<td>".convertToHoursMins($CounterArbeitszeit*$granulationMins)."h</td>";
-            $Body .= "<td>".convertToHoursMins($CounterBereitschaft*$granulationMins)."h</td>";
+            $Body .= "<td>".convertToHoursMins($CounterArbeitszeit*DIENSTEGRANULATIONMINS)."h</td>";
+            $Body .= "<td>".convertToHoursMins($CounterBereitschaft*DIENSTEGRANULATIONMINS)."h</td>";
             $Body .= "</tr>";
             $Body .= "</tbody>";
 
@@ -391,8 +391,8 @@ function diensterfassung_form_parser($mysqli){
             $Inputs .= "<input type='hidden' name='datum' value='".$_POST['datum']."'>";
             $Inputs .= "<input type='hidden' name='diensttyp' value='".$_POST['diensttyp']."'>";
             $Inputs .= "<input type='hidden' name='dienstprotokoll' value='".$ProtocolText."'>";
-            $Inputs .= "<input type='hidden' name='dienstsummeaz' value='".($CounterArbeitszeit*$granulationMins)."'>";
-            $Inputs .= "<input type='hidden' name='dienstsummebd' value='".($CounterBereitschaft*$granulationMins)."'>";
+            $Inputs .= "<input type='hidden' name='dienstsummeaz' value='".($CounterArbeitszeit*DIENSTEGRANULATIONMINS)."'>";
+            $Inputs .= "<input type='hidden' name='dienstsummebd' value='".($CounterBereitschaft*DIENSTEGRANULATIONMINS)."'>";
 
             $ParserOutput['form_inputs'] = $Inputs;
 

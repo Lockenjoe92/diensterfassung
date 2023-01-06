@@ -23,7 +23,7 @@ if(permission_checker_boolean('admin')){
 
 // Load Team-View Buttons
 if(permission_checker_boolean('team')){
-    $teamFunctions = "<p><a href='diensterfassung.php' class='btn btn-dark'>Dienst erfassen</a></p>";
+    $teamFunctions = "<p><a href='diensterfassung.php' class='btn btn-dark'>Dienst erfassen</a><a href='erfassungsuebersicht.php' class='btn btn-dark ml-3'>Übersicht Erfassungsstand</a></p>";
 } else {
     $teamFunctions = "";
 }
