@@ -58,7 +58,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                     // Bind result variables
                     $stmt->bind_result($id, $username, $hashed_password, $vorname, $groups);
                     if($stmt->fetch()){
-                        var_dump($vorname);
+                        #dump($vorname);
 
                         if(password_verify($password, $hashed_password)){
                             // Password is correct, so start a new session

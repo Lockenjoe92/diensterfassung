@@ -38,7 +38,7 @@ require_once "./configs/db_config.php";
     </style>
 </head>
 <body>
-<h1 class="my-5">Hi, <b><?php echo htmlspecialchars($_SESSION["vorname"]); ?></b>. Willkommen auf unserer Seite.</h1>
+<h1 class="my-5">Hi, <b><?php echo htmlspecialchars($_SESSION["vorname"]); ?></b>.<br>Willkommen auf unserer Bereitschaftsdiensterfassungsseite.</h1>
 <?php echo $adminFunctions; ?>
 <?php echo $teamFunctions; ?>
 <p>

@@ -34,14 +34,14 @@ function lade_anzahl_dienste_spez_typ_an_datum_x($mysqli, $datum, $diensttyp){
 
 function dienst_schon_eingetragen($mysqli, $datum, $diensttyp){
 
-    var_dump($datum, $diensttyp);
+    #dump($datum, $diensttyp);
 
     // load all we need to know about the Diensttyp
     $Dienstmeta = lade_diensttyp_meta($mysqli, $diensttyp);
 
     // check if Dienste of this type on this date have already been added to the db
     $AnzahlInDB = lade_anzahl_dienste_spez_typ_an_datum_x($mysqli, $datum, $diensttyp);
-    var_dump($AnzahlInDB);
+    #dump($AnzahlInDB);
 
     // Check if number of entered Dienste is less than max. according to setting
     if (intval($AnzahlInDB) < intval($Dienstmeta['max_pro_tag'])){

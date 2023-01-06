@@ -114,7 +114,7 @@ function diensterfassung_form_parser($mysqli, $granulationMins){
     require_once "tools/dienste_funktionen.php";
     require_once "tools/time_stuff.php";
 
-    var_dump($_POST);
+    #dump($_POST);
 
     // Initialize Ouputs
     $ParserOutput['kommentar'] = '';
@@ -311,8 +311,8 @@ function diensterfassung_form_parser($mysqli, $granulationMins){
             // Render Table Body
             $Body = "<tbody>";
             $Body .= "<tr>";
-            $Body .= "<td>".convertToHoursMins($CounterArbeitszeit*$granulationMins)."</td>";
-            $Body .= "<td>".convertToHoursMins($CounterBereitschaft*$granulationMins)."</td>";
+            $Body .= "<td>".convertToHoursMins($CounterArbeitszeit*$granulationMins)."h</td>";
+            $Body .= "<td>".convertToHoursMins($CounterBereitschaft*$granulationMins)."h</td>";
             $Body .= "</tr>";
             $Body .= "</tbody>";
 
