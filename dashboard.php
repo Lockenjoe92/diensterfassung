@@ -29,7 +29,7 @@ if(permission_checker_boolean('team')){
 }
 
 // Load general status-bar
-$GesamtDienste = gesamt_dienste_statustool($mysqli, 'nums');
+$GesamtDienste = gesamt_dienste_statustool($mysqli, 'nums', DATEBEGINERFASSUNG, DATEENDEERFASSUNG);
 $GesamtVollstaendingkeit = gesamt_dienste_statustool($mysqli, 'vollstaendigkeit', DATEBEGINERFASSUNG, DATEENDEERFASSUNG);
 $GeneralStatusBar = "<div class='container-sm'><table class='table table-bordered'><thead><tr><th scope='col'>Gesamtzahl erfasste Dienste</th><th scope='col'>Vollständigkeit erfasste Dienste</th></tr></thead><tbody><tr><td>".$GesamtDienste."</td><td>".$GesamtVollstaendingkeit."%</td></tr></tbody></table></div>";
 
