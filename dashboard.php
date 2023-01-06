@@ -16,7 +16,7 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
 // Load Admin-View Buttons
 require_once "./tools/permission_checker.php";
 if(permission_checker_boolean('admin')){
-    $adminFunctions = "<p><a href='dienst-anlegen.php' class='btn btn-dark'>Diensttyp anlegen</a></p>";
+    $adminFunctions = "<p><a href='usermanagement.php' class='btn btn-dark'>Userverwaltung</a><a href='diensttyp_verwaltung.php' class='btn btn-dark ml-3'>Diensttypen verwalten</a></p>";
 } else {
     $adminFunctions = "";
 }

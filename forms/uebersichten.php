@@ -16,6 +16,7 @@ function table_erfassungsuebersicht($mysqli, $BeginDate, $EndeDate){
     // Initialize Stuff
     $Response = '';
     require_once "tools/time_stuff.php";
+    require_once "tools/dienste_funktionen.php";
 
     // Static table head
     $Response .= '<div class="container">';
@@ -41,14 +42,7 @@ function table_erfassungsuebersicht($mysqli, $BeginDate, $EndeDate){
     $FirstDayNumber = strftime('%u', strtotime($BeginDate));
     $TotalDaysAchieved = 0;
 
-    $AlleDienste = array();
-    $sql = "SELECT id, dienstname, diensttage FROM diensttypen ORDER BY dienstname ASC";
-    if($stmt = $mysqli->query($sql)){
-        // store result
-        while ($row = $stmt->fetch_assoc()) {
-            $AlleDienste[] = $row;
-        }
-    }
+    $AlleDienste = get_array_with_all_diensttypen($mysqli);
 
     for($a=0;$a<$NecessaryWeeks;$a++){
 

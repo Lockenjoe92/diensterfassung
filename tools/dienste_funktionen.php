@@ -118,3 +118,16 @@ function lade_soll_alle_diensttypen_an_wochentag($mysqli, $day){
 
     return $counter;
 }
+
+function get_array_with_all_diensttypen($mysqli){
+
+    $AlleDienste = array();
+    $sql = "SELECT * FROM diensttypen ORDER BY dienstname ASC";
+    if($stmt = $mysqli->query($sql)){
+        // store result
+        while ($row = $stmt->fetch_assoc()) {
+            $AlleDienste[] = $row;
+        }
+    }
+    return $AlleDienste;
+}
