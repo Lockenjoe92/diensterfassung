@@ -2,6 +2,11 @@
 // Initialize the session
 session_start();
 
+// Load dependencies
+require_once "configs/db_config.php";
+require_once "tools/status_bar_funktionen.php";
+require_once "configs/settings_config.php";
+
 // Check if the user is logged in, if not then redirect him to login page
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
     header("location: login.php");
@@ -23,7 +28,10 @@ if(permission_checker_boolean('team')){
     $teamFunctions = "";
 }
 
-require_once "./configs/db_config.php";
+// Load general status-bar
+$GesamtDienste = gesamt_dienste_statustool($mysqli, 'nums');
+$GesamtVollstaendingkeit = gesamt_dienste_statustool($mysqli, 'vollstaendigkeit', DATEBEGINERFASSUNG, DATEENDEERFASSUNG);
+$GeneralStatusBar = "<div class='container-sm'><table class='table table-bordered'><thead><tr><th scope='col'>Gesamtzahl erfasste Dienste</th><th scope='col'>Vollständigkeit erfasste Dienste</th></tr></thead><tbody><tr><td>".$GesamtDienste."</td><td>".$GesamtVollstaendingkeit."%</td></tr></tbody></table></div>";
 
 ?>
 
@@ -34,11 +42,12 @@ require_once "./configs/db_config.php";
     <title>Welcome</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
-        body{ font: 14px sans-serif; text-align: center; }
+        body{ font: 14px sans-serif; text-align: center;}
     </style>
 </head>
 <body>
 <h1 class="my-5">Hi, <b><?php echo htmlspecialchars($_SESSION["vorname"]); ?></b>.<br>Willkommen auf unserer Bereitschaftsdiensterfassungsseite.</h1>
+<?php echo $GeneralStatusBar; ?>
 <?php echo $adminFunctions; ?>
 <?php echo $teamFunctions; ?>
 <p>

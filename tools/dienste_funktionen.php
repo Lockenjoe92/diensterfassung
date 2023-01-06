@@ -32,6 +32,25 @@ function lade_anzahl_dienste_spez_typ_an_datum_x($mysqli, $datum, $diensttyp){
 
 }
 
+function lade_anzahl_dienste_an_datum_x($mysqli, $datum){
+
+    $sql = "SELECT id FROM dienste WHERE datum = ? AND storno_user = 0";
+    if($stmt = $mysqli->prepare($sql)){
+        $stmt->bind_param("s", $datum);
+        // Attempt to execute the prepared statement
+        if($stmt->execute()){
+            // store result
+            $stmt->store_result();
+            return $stmt->num_rows;
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+
+}
+
 function dienst_schon_eingetragen($mysqli, $datum, $diensttyp){
 
     #dump($datum, $diensttyp);
@@ -83,4 +102,19 @@ function dienst_eintragen($mysqli, $typ, $datum, $erfasser, $auswertungProtokoll
 
     }
 
+}
+
+function lade_soll_alle_diensttypen_an_wochentag($mysqli, $day){
+    // Prepare a select statement
+    $sql = "SELECT id, diensttage, max_pro_tag FROM diensttypen ORDER BY dienstname ASC";
+    if($stmt = $mysqli->query($sql)){
+        $counter = 0;
+        while ($row = $stmt->fetch_assoc()) {
+            if(in_array($day, explode(',',$row['diensttage']))){
+                $counter += $row['max_pro_tag'];
+            }
+        }
+    }
+
+    return $counter;
 }
