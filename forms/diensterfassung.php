@@ -53,7 +53,7 @@ function diensterfassung_table_form_element($mysqli, $Datum, $Diensttyp, $Protoc
         $CurrentCellTimeMinutesOperator = '+'.$a*$granulationMins.' minutes';
         $CurrentCellTimeMinutesOperatorEnd = '+'.(($a*$granulationMins)+$granulationMins).' minutes';
         $CurrentCellTimeBegin = date('G:i', strtotime($CurrentCellTimeMinutesOperator, $StartTimeObj));
-        $CurrentCellTimeEnd = date('G:i', strtotime($CurrentCellTimeMinutesOperatorEnd, $StartTimeObj));;
+        $CurrentCellTimeEnd = date('G:i', strtotime($CurrentCellTimeMinutesOperatorEnd, $StartTimeObj));
 
         $DienstzeitDisplay = $CurrentCellTimeBegin." - ".$CurrentCellTimeEnd;
         $Body .= "<th scope='row'>".$DienstzeitDisplay."</th>";

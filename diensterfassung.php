@@ -6,6 +6,7 @@ session_start();
 require_once "./tools/permission_checker.php";
 require_once "./forms/diensterfassung.php";
 require_once "./configs/db_config.php";
+require_once "./tools/site_body.php";
 
 // Check if the user is logged in, if not then redirect him to login page
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
@@ -38,6 +39,9 @@ $FormButtons = $ParserOutput['form_buttons'];
     </style>
 </head>
 <body>
+<?php
+echo nav_bar('logged-in');
+?>
 <div class="wrapper">
     <h2>Dienst erfassen</h2>
     <p><?php echo $KommentarOben; ?></p>

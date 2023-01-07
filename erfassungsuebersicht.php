@@ -7,6 +7,7 @@ require_once "./tools/permission_checker.php";
 require_once "tools/uebersichten.php";
 require_once "forms/uebersichten.php";
 require_once "configs/db_config.php";
+require_once "./tools/site_body.php";
 
 // Check if the user is logged in, if not then redirect him to login page
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
@@ -36,7 +37,10 @@ $ParserOutput = parser_erfassunguebersicht($mysqli);
     </style>
 </head>
 <body>
-<div class="wrapper">
+<?php
+echo nav_bar('logged-in');
+?>
+<div class="container">
     <h2>Erfassungsübersicht</h2>
 
     <p>Hier entsteht eine tabellarische Übersicht über den Erfassungsstand der Bereitschaftsdienste.</p>

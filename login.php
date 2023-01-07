@@ -10,6 +10,7 @@ if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true){
 
 // Include config file
 require_once "./configs/db_config.php";
+require_once "./tools/site_body.php";
 
 // Define variables and initialize with empty values
 $username = $password = "";
@@ -108,6 +109,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     </style>
 </head>
 <body>
+<?php
+echo nav_bar('not-logged-in');
+?>
 <div class="wrapper">
     <h2>Login</h2>
     <p>Bitte gib deine Logindaten ein.</p>

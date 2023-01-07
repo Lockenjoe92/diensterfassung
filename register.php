@@ -1,6 +1,7 @@
 <?php
 // Include config file
 require_once "./configs/db_config.php";
+require_once "./tools/site_body.php";
 
 // Define variables and initialize with empty values
 $username = $password = $confirm_password = $vorname = "";
@@ -118,6 +119,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     </style>
 </head>
 <body>
+<?php
+echo nav_bar('not-logged-in');
+?>
 <div class="wrapper">
     <h2>Anmeldung</h2>
     <p>Bitte fülle das Formular aus um ein Nutzerkonto anzulegen.</p>

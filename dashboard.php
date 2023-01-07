@@ -6,6 +6,7 @@ session_start();
 require_once "configs/db_config.php";
 require_once "tools/status_bar_funktionen.php";
 require_once "configs/settings_config.php";
+require_once "./tools/site_body.php";
 
 // Check if the user is logged in, if not then redirect him to login page
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
@@ -46,6 +47,9 @@ $GeneralStatusBar = "<div class='container-sm'><table class='table table-bordere
     </style>
 </head>
 <body>
+<?php
+echo nav_bar('logged-in');
+?>
 <h1 class="my-5">Hi, <b><?php echo htmlspecialchars($_SESSION["vorname"]); ?></b>.<br>Willkommen auf unserer Bereitschaftsdiensterfassungsseite.</h1>
 <?php echo $GeneralStatusBar; ?>
 <?php echo $adminFunctions; ?>
