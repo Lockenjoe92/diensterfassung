@@ -12,6 +12,7 @@ function usermanagement_table($mysqli){
     $Table .= '<thead>';
     $Table .= '<tr>';
     $Table .= '<th scope="col">ID</th>';
+    $Table .= '<th scope="col">Nachname</th>';
     $Table .= '<th scope="col">Vorname</th>';
     $Table .= '<th scope="col">Registriert am</th>';
     $Table .= '<th scope="col">Nutzergruppen</th>';
@@ -32,6 +33,7 @@ function usermanagement_table($mysqli){
 
         $Table .= '<tr>';
         $Table .= '<td>'.$user['id'].'</td>';
+        $Table .= '<td>'.$user['nachname'].'</td>';
         $Table .= '<td>'.$user['vorname'].'</td>';
         $Table .= '<td>'.$user['created_at'].'</td>';
         $Table .= '<td>'.$Rollen.'</td>';

@@ -100,10 +100,33 @@ function generate_td_element_uebersicht($mysqli, $BeginDate, $Iteration, $AlleDi
     // Calculate Cell Date
     $Command = "+".$Iteration." days";
     $datum = date("Y-m-d", strtotime($Command, strtotime($BeginDate)));
+    $datumLeserlich = date("d.m.Y", strtotime($Command, strtotime($BeginDate)));
+
+    //Get All Holidays -> if so, "Weekday" Holiday or Holiday-1 is used to fetch correct Diensttyp
+    $Holidays = get_array_with_all_dates_from_holidays();
+    $DayBeforeHoliday=false;
+    $TodayHoliday=false;
+    foreach ($Holidays as $Holiday){
+        $dateDayBeforeHoliday=date('Y-m-d', strtotime('-1 day', strtotime($Holiday)));
+        if($Holiday == $datum){
+            $TodayHoliday=true;
+        }
+        if($dateDayBeforeHoliday == $datum){
+            $DayBeforeHoliday=true;
+        }
+    }
+    $Weekday = "";
+    if($TodayHoliday){
+        $Weekday = "Holiday";
+    } elseif ($DayBeforeHoliday) {
+        $Weekday = "Holiday-1";
+    } else {
+        $Weekday = date('l', strtotime($datum));
+    }
 
     // fetch current stats
     $IST = lade_anzahl_dienste_an_datum_x($mysqli, $datum);
-    $SOLL = lade_soll_alle_diensttypen_an_wochentag($mysqli, date('l', strtotime($datum)));
+    $SOLL = lade_soll_alle_diensttypen_an_wochentag($mysqli, $Weekday);
     $Div = $IST/$SOLL;
 
     // Coloring
@@ -120,8 +143,9 @@ function generate_td_element_uebersicht($mysqli, $BeginDate, $Iteration, $AlleDi
         // fetch missing dienste for tooltip
         $Missing = '';
         $MissingCount = 0;
+
         foreach ($AlleDienste as $Dienst){
-            if(in_array(date('l', strtotime($datum)), explode(',',$Dienst['diensttage']))){
+            if(in_array($Weekday, explode(',',$Dienst['diensttage']))){
                 if(!dienst_schon_eingetragen($mysqli, $datum, $Dienst["id"])) {
                     $Missing .= $Dienst["dienstname"]."<br>";
                     $MissingCount++;
@@ -130,9 +154,9 @@ function generate_td_element_uebersicht($mysqli, $BeginDate, $Iteration, $AlleDi
         }
 
         if($MissingCount>0){
-            $Missing = '<b>Fehlende Einträge:</b><br>'.$Missing;
+            $Missing = $datumLeserlich.'<br><b>Fehlende Einträge:</b><br>'.$Missing;
         } else {
-            $Missing = 'Alle Dienste erfasst';
+            $Missing = $datumLeserlich.'<br>Alle Dienste erfasst';
         }
 
         $Tooltip = '<a href="#" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="'.$Missing.'">'.$IST.'/'.$SOLL.'</a></a>';

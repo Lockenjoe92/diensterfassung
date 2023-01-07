@@ -2,7 +2,7 @@
 function get_array_of_all_users($mysqli){
 
     $AlleUser = array();
-    $sql = "SELECT * FROM users ORDER BY vorname ASC";
+    $sql = "SELECT * FROM users ORDER BY nachname ASC";
     if($stmt = $mysqli->query($sql)){
         // store result
         while ($row = $stmt->fetch_assoc()) {

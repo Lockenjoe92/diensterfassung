@@ -2,9 +2,9 @@
 function nav_bar($mode='not-logged-in'){
 
     if($mode=='not-logged-in'){
-        $response = '<nav class="navbar" style="background-color: #e3f2fd;"><div class="container-fluid"><span class="navbar-brand mb-0 h1">BD-Zeitenerfassung</span></div></nav>';
+        $response = '<nav class="navbar" style="background-color: #eeeee4;"><div class="container-fluid"><span class="navbar-brand mb-0 h1">BD-Zeitenerfassung</span></div></nav>';
     } elseif ($mode=='logged-in'){
-        $response = '<nav class="navbar" style="background-color: #e3f2fd;"><div class="container-fluid"><a class="navbar-brand" href="dashboard.php">BD-Zeitenerfassung</a></div></nav>';
+        $response = '<nav class="navbar" style="background-color: #eeeee4;"><div class="container-fluid"><a class="navbar-brand" href="dashboard.php">BD-Zeitenerfassung</a></div></nav>';
     }
 
     return $response;
