@@ -20,10 +20,11 @@ function gesamt_dienste_statustool($mysqli, $mode, $begin='', $end=''){
         for($a=0;$a<=$AnzahlTage;$a++){
             $Command = "+".$a." days";
             $CurrentDate = date('Y-m-d', strtotime($Command, strtotime($begin)));
+            $WeekdayMode = calculate_weekday_or_holiday_by_input_date($CurrentDate);
 
             if($DateToday<=date('Y-m-d', strtotime($end))){
                 $Ist = lade_anzahl_dienste_an_datum_x($mysqli, $CurrentDate);
-                $Soll = lade_soll_alle_diensttypen_an_wochentag($mysqli, date('l', strtotime($Command, strtotime($begin))));
+                $Soll = lade_soll_alle_diensttypen_an_wochentag($mysqli, $WeekdayMode);
 
                 $IstDienstCounter += $Ist;
                 $SollDienstCounter += $Soll;
@@ -31,7 +32,7 @@ function gesamt_dienste_statustool($mysqli, $mode, $begin='', $end=''){
 
         }
 
-        return round($IstDienstCounter/$SollDienstCounter, 2);
+        return round($IstDienstCounter/$SollDienstCounter*100, 2);
     }
 
 }

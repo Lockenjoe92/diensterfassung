@@ -102,31 +102,11 @@ function generate_td_element_uebersicht($mysqli, $BeginDate, $Iteration, $AlleDi
     $datum = date("Y-m-d", strtotime($Command, strtotime($BeginDate)));
     $datumLeserlich = date("d.m.Y", strtotime($Command, strtotime($BeginDate)));
 
-    //Get All Holidays -> if so, "Weekday" Holiday or Holiday-1 is used to fetch correct Diensttyp
-    $Holidays = get_array_with_all_dates_from_holidays();
-    $DayBeforeHoliday=false;
-    $TodayHoliday=false;
-    foreach ($Holidays as $Holiday){
-        $dateDayBeforeHoliday=date('Y-m-d', strtotime('-1 day', strtotime($Holiday)));
-        if($Holiday == $datum){
-            $TodayHoliday=true;
-        }
-        if($dateDayBeforeHoliday == $datum){
-            $DayBeforeHoliday=true;
-        }
-    }
-    $Weekday = "";
-    if($TodayHoliday){
-        $Weekday = "Holiday";
-    } elseif ($DayBeforeHoliday) {
-        $Weekday = "Holiday-1";
-    } else {
-        $Weekday = date('l', strtotime($datum));
-    }
+    $WeekdayMode = calculate_weekday_or_holiday_by_input_date($datum);
 
     // fetch current stats
     $IST = lade_anzahl_dienste_an_datum_x($mysqli, $datum);
-    $SOLL = lade_soll_alle_diensttypen_an_wochentag($mysqli, $Weekday);
+    $SOLL = lade_soll_alle_diensttypen_an_wochentag($mysqli, $WeekdayMode);
     $Div = $IST/$SOLL;
 
     // Coloring
@@ -145,9 +125,9 @@ function generate_td_element_uebersicht($mysqli, $BeginDate, $Iteration, $AlleDi
         $MissingCount = 0;
 
         foreach ($AlleDienste as $Dienst){
-            if(in_array($Weekday, explode(',',$Dienst['diensttage']))){
+            if(in_array($WeekdayMode, explode(',',$Dienst['diensttage']))){
                 if(!dienst_schon_eingetragen($mysqli, $datum, $Dienst["id"])) {
-                    $Missing .= $Dienst["dienstname"]."<br>";
+                    $Missing .= $Dienst["diensttyp_detail"]."<br>";
                     $MissingCount++;
                 }
             }

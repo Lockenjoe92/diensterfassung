@@ -31,3 +31,31 @@ function get_array_with_all_dates_from_holidays(){
     return explode(',',FEIERTAGE);
 
 }
+
+function calculate_weekday_or_holiday_by_input_date($Datum){
+
+    //Get All Holidays -> if so, "Weekday" Holiday or Holiday-1 is used to fetch correct Diensttyp
+    $Holidays = get_array_with_all_dates_from_holidays();
+    $DayBeforeHoliday=false;
+    $TodayHoliday=false;
+    foreach ($Holidays as $Holiday){
+        $dateDayBeforeHoliday=date('Y-m-d', strtotime('-1 day', strtotime($Holiday)));
+        if($Holiday == $Datum){
+            $TodayHoliday=true;
+        }
+        if($dateDayBeforeHoliday == $Datum){
+            $DayBeforeHoliday=true;
+        }
+    }
+    $Weekday = "";
+    if($TodayHoliday){
+        $Weekday = "Holiday";
+    } elseif ($DayBeforeHoliday) {
+        $Weekday = "Holiday-1";
+    } else {
+        $Weekday = date('l', strtotime($Datum));
+    }
+
+    return $Weekday;
+}
+

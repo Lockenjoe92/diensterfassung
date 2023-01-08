@@ -108,7 +108,7 @@ function dropdown_diensttypen($name, $day, $mysqli, $selected='', $disabled='', 
     }
 
     // Prepare a select statement
-    $sql = "SELECT id, dienstname, von, bis, diensttage FROM diensttypen ORDER BY dienstname ASC";
+    $sql = "SELECT id, diensttyp_details, von, bis, diensttage FROM diensttypen ORDER BY dienstname ASC";
     if($stmt = $mysqli->query($sql)){
 
             while ($row = $stmt->fetch_assoc()) {
@@ -117,16 +117,16 @@ function dropdown_diensttypen($name, $day, $mysqli, $selected='', $disabled='', 
                     if(!empty($datum)){
                         if(!dienst_schon_eingetragen($mysqli, $datum, $row["id"])){
                             if($selected==$row["id"]){
-                                $Output .= '<option value="'.$row["id"].'" selected>'.$row["dienstname"].'</option>';
+                                $Output .= '<option value="'.$row["id"].'" selected>'.$row["diensttyp_details"].'</option>';
                             } else {
-                                $Output .= '<option value="'.$row["id"].'">'.$row["dienstname"].'</option>';
+                                $Output .= '<option value="'.$row["id"].'">'.$row["diensttyp_details"].'</option>';
                             }
                         }
                     } else {
                         if($selected==$row["id"]){
-                            $Output .= '<option value="'.$row["id"].'" selected>'.$row["dienstname"].'</option>';
+                            $Output .= '<option value="'.$row["id"].'" selected>'.$row["diensttyp_details"].'</option>';
                         } else {
-                            $Output .= '<option value="'.$row["id"].'">'.$row["dienstname"].'</option>';
+                            $Output .= '<option value="'.$row["id"].'">'.$row["diensttyp_details"].'</option>';
                         }
                     }
                 }
@@ -205,8 +205,8 @@ function diensterfassung_form_parser($mysqli){
             //Form inputs
             $Inputs = '<div class="form-group"><label>Datum</label><input type="date" name="datum" class="form-control is-valid" value="'.$_POST['datum'].'" disabled></div>';
             # Parse Date 2 weekday
-            $ChosenWeekday = date('l', strtotime($_POST['datum']));
-            $Inputs .= '<div class="form-group"><label>Diensttyp</label>'.dropdown_diensttypen('diensttyp', $ChosenWeekday, $mysqli, '', '', '', $_POST['datum']).'</div>';
+            $WeekdayMode = calculate_weekday_or_holiday_by_input_date($_POST['datum']);
+            $Inputs .= '<div class="form-group"><label>Diensttyp</label>'.dropdown_diensttypen('diensttyp', $WeekdayMode, $mysqli, '', '', '', $_POST['datum']).'</div>';
             $Inputs .= "<input type='hidden' name='datum' value='".$_POST['datum']."'>";
 
             $ParserOutput['form_inputs'] = $Inputs;
@@ -247,8 +247,8 @@ function diensterfassung_form_parser($mysqli){
             $ParserOutput['kommentar'] = 'Schritt 2: Bitte wähle den zu erfassenden Diensttyp aus.';
             //Form inputs
             $Inputs = '<div class="form-group"><label>Datum</label><input type="date" name="datum" class="form-control is-valid" value="'.$_POST['datum'].'" disabled></div>';
-            $ChosenWeekday = date('l', strtotime($_POST['datum']));
-            $Inputs .= '<div class="form-group"><label>Diensttyp</label>'.dropdown_diensttypen('diensttyp', $ChosenWeekday, $mysqli, $_POST['diensttyp'], '', 'is-invalid', $_POST['datum']).'<span class="invalid-feedback">'.$ErrMess.'</span></div>';
+            $WeekdayMode = calculate_weekday_or_holiday_by_input_date($_POST['datum']);
+            $Inputs .= '<div class="form-group"><label>Diensttyp</label>'.dropdown_diensttypen('diensttyp', $WeekdayMode, $mysqli, $_POST['diensttyp'], '', 'is-invalid', $_POST['datum']).'<span class="invalid-feedback">'.$ErrMess.'</span></div>';
             $Inputs .= "<input type='hidden' name='datum' value='".$_POST['datum']."'>";
 
             $ParserOutput['form_inputs'] = $Inputs;
@@ -262,8 +262,8 @@ function diensterfassung_form_parser($mysqli){
             //Form inputs
             $Inputs = '<div class="form-group"><label>Datum</label><input type="date" name="datum" class="form-control is-valid" value="'.$_POST['datum'].'" disabled></div>';
             # Parse Date 2 weekday
-            $ChosenWeekday = date('l', strtotime($_POST['datum']));
-            $Inputs .= '<div class="form-group"><label>Diensttyp</label>'.dropdown_diensttypen('diensttyp', $ChosenWeekday, $mysqli, $_POST['diensttyp'], 'disabled', 'is-valid').'</div>';
+            $WeekdayMode = calculate_weekday_or_holiday_by_input_date($_POST['datum']);
+            $Inputs .= '<div class="form-group"><label>Diensttyp</label>'.dropdown_diensttypen('diensttyp', $WeekdayMode, $mysqli, $_POST['diensttyp'], 'disabled', 'is-valid').'</div>';
             $Inputs .= '<div class="form-group"><label>Arbeits-/Bereitschaftszeiten</label>'.diensterfassung_table_form_element($mysqli, $_POST['datum'], $_POST['diensttyp'], '', DIENSTEGRANULATIONMINS).'</div>';
             $Inputs .= "<input type='hidden' name='datum' value='".$_POST['datum']."'>";
             $Inputs .= "<input type='hidden' name='diensttyp' value='".$_POST['diensttyp']."'>";
@@ -350,8 +350,8 @@ function diensterfassung_form_parser($mysqli){
             //Form inputs
             $Inputs = '<div class="form-group"><label>Datum</label><input type="date" name="datum" class="form-control is-valid" value="'.$_POST['datum'].'" disabled></div>';
             # Parse Date 2 weekday
-            $ChosenWeekday = date('l', strtotime($_POST['datum']));
-            $Inputs .= '<div class="form-group"><label>Diensttyp</label>'.dropdown_diensttypen('diensttyp', $ChosenWeekday, $mysqli, $_POST['diensttyp'], 'disabled', 'is-valid').'</div>';
+            $WeekdayMode = calculate_weekday_or_holiday_by_input_date($_POST['datum']);
+            $Inputs .= '<div class="form-group"><label>Diensttyp</label>'.dropdown_diensttypen('diensttyp', $WeekdayMode, $mysqli, $_POST['diensttyp'], 'disabled', 'is-valid').'</div>';
             $Inputs .= '<div class="form-group"><label>Arbeits-/Bereitschaftszeiten</label><div class="alert alert-primary" role="alert">'.$ErrMess.'</div>'.diensterfassung_table_form_element($mysqli, $_POST['datum'], $_POST['diensttyp'], $ProtocolText, DIENSTEGRANULATIONMINS).'</div>';
             $Inputs .= "<input type='hidden' name='datum' value='".$_POST['datum']."'>";
             $Inputs .= "<input type='hidden' name='diensttyp' value='".$_POST['diensttyp']."'>";
@@ -390,8 +390,8 @@ function diensterfassung_form_parser($mysqli){
             //Form inputs
             $Inputs = '<div class="form-group"><label>Datum</label><input type="date" name="datum" class="form-control is-valid" value="'.$_POST['datum'].'" disabled></div>';
             # Parse Date 2 weekday
-            $ChosenWeekday = date('l', strtotime($_POST['datum']));
-            $Inputs .= '<div class="form-group"><label>Diensttyp</label>'.dropdown_diensttypen('diensttyp', $ChosenWeekday, $mysqli, $_POST['diensttyp'], 'disabled', 'is-valid').'</div>';
+            $WeekdayMode = calculate_weekday_or_holiday_by_input_date($_POST['datum']);
+            $Inputs .= '<div class="form-group"><label>Diensttyp</label>'.dropdown_diensttypen('diensttyp', $WeekdayMode, $mysqli, $_POST['diensttyp'], 'disabled', 'is-valid').'</div>';
             $Inputs .= '<div class="form-group"><label>Arbeits-/Bereitschaftszeiten</label>'.$TableStep4.'</div>';
             $Inputs .= "<input type='hidden' name='datum' value='".$_POST['datum']."'>";
             $Inputs .= "<input type='hidden' name='diensttyp' value='".$_POST['diensttyp']."'>";
@@ -416,8 +416,8 @@ function diensterfassung_form_parser($mysqli){
             $ParserOutput['kommentar'] = 'Schritt 5: Eintrag in Datenbank.';
             $Inputs = '<div class="form-group"><label>Datum</label><input type="date" name="datum" class="form-control is-valid" value="'.$_POST['datum'].'" disabled></div>';
             # Parse Date 2 weekday
-            $ChosenWeekday = date('l', strtotime($_POST['datum']));
-            $Inputs .= '<div class="form-group"><label>Diensttyp</label>'.dropdown_diensttypen('diensttyp', $ChosenWeekday, $mysqli, $_POST['diensttyp'], 'disabled', 'is-valid').'</div>';
+            $WeekdayMode = calculate_weekday_or_holiday_by_input_date($_POST['datum']);
+            $Inputs .= '<div class="form-group"><label>Diensttyp</label>'.dropdown_diensttypen('diensttyp', $WeekdayMode, $mysqli, $_POST['diensttyp'], 'disabled', 'is-valid').'</div>';
             $Inputs .= '<h3>Eintrag erfolgreich!</h3><p>Der Eintrag trägt die ID:<b>'.$Answer['answer'].'</b></p>';
             $ParserOutput['form_inputs'] = $Inputs;
             $ParserOutput['form_buttons'] = '<div class="form-group"><input type="submit" class="btn btn-secondary ml-2" value="Zurück" name="finish5"></div>';
@@ -425,8 +425,8 @@ function diensterfassung_form_parser($mysqli){
             $ParserOutput['kommentar'] = 'Schritt 5: Eintrag in Datenbank.';
             $Inputs = '<div class="form-group"><label>Datum</label><input type="date" name="datum" class="form-control is-valid" value="'.$_POST['datum'].'" disabled></div>';
             # Parse Date 2 weekday
-            $ChosenWeekday = date('l', strtotime($_POST['datum']));
-            $Inputs .= '<div class="form-group"><label>Diensttyp</label>'.dropdown_diensttypen('diensttyp', $ChosenWeekday, $mysqli, $_POST['diensttyp'], 'disabled', 'is-valid').'</div>';
+            $WeekdayMode = calculate_weekday_or_holiday_by_input_date($_POST['datum']);
+            $Inputs .= '<div class="form-group"><label>Diensttyp</label>'.dropdown_diensttypen('diensttyp', $WeekdayMode, $mysqli, $_POST['diensttyp'], 'disabled', 'is-valid').'</div>';
             $Inputs .= '<h3>Fehler beim Eintragen</h3><p><b>'.$Answer['answer'].'</b></p>';
             $Inputs .= "<input type='hidden' name='datum' value='".$_POST['datum']."'>";
             $Inputs .= "<input type='hidden' name='diensttyp' value='".$_POST['diensttyp']."'>";
@@ -454,8 +454,8 @@ function diensterfassung_form_parser($mysqli){
         //Form inputs
         $Inputs = '<div class="form-group"><label>Datum</label><input type="date" name="datum" class="form-control is-valid" value="'.$_POST['datum'].'" disabled></div>';
         # Parse Date 2 weekday
-        $ChosenWeekday = date('l', strtotime($_POST['datum']));
-        $Inputs .= '<div class="form-group"><label>Diensttyp</label>'.dropdown_diensttypen('diensttyp', $ChosenWeekday, $mysqli, $_POST['diensttyp']).'</div>';
+        $WeekdayMode = calculate_weekday_or_holiday_by_input_date($_POST['datum']);
+        $Inputs .= '<div class="form-group"><label>Diensttyp</label>'.dropdown_diensttypen('diensttyp', $WeekdayMode, $mysqli, $_POST['diensttyp']).'</div>';
         $Inputs .= "<input type='hidden' name='datum' value='".$_POST['datum']."'>";
 
         $ParserOutput['form_inputs'] = $Inputs;
@@ -472,8 +472,8 @@ function diensterfassung_form_parser($mysqli){
         //Form inputs
         $Inputs = '<div class="form-group"><label>Datum</label><input type="date" name="datum" class="form-control is-valid" value="'.$_POST['datum'].'" disabled></div>';
         # Parse Date 2 weekday
-        $ChosenWeekday = date('l', strtotime($_POST['datum']));
-        $Inputs .= '<div class="form-group"><label>Diensttyp</label>'.dropdown_diensttypen('diensttyp', $ChosenWeekday, $mysqli, $_POST['diensttyp'], 'disabled', 'is-valid').'</div>';
+        $WeekdayMode = calculate_weekday_or_holiday_by_input_date($_POST['datum']);
+        $Inputs .= '<div class="form-group"><label>Diensttyp</label>'.dropdown_diensttypen('diensttyp', $WeekdayMode, $mysqli, $_POST['diensttyp'], 'disabled', 'is-valid').'</div>';
         $Inputs .= '<div class="form-group"><label>Arbeits-/Bereitschaftszeiten</label>'.diensterfassung_table_form_element($mysqli, $_POST['datum'], $_POST['diensttyp'], $_POST['dienstprotokoll'], $granulationMins).'</div>';
         $Inputs .= "<input type='hidden' name='datum' value='".$_POST['datum']."'>";
         $Inputs .= "<input type='hidden' name='diensttyp' value='".$_POST['diensttyp']."'>";
